@@ -2,3 +2,5 @@ requests
 beautifulsoup4
 sqlalchemy
 tabulate
+pandas
+keyboard  # Uncomment if implementing Esc key detection

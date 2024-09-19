@@ -3,7 +3,7 @@ import logging
 from sqlalchemy.orm import sessionmaker
 from database import init_db
 from parser import process_reports
-from queries import execute_query, list_queries
+from queries import execute_query, list_queries, confirm_exit
 import sys
 
 def setup_logging():
@@ -33,7 +33,6 @@ def update_reports(session):
 
 def perform_queries(session):
     print("\n--- Query Menu ---")
-    from queries import execute_query
     execute_query(session)
 
 def main_menu():
@@ -52,18 +51,18 @@ def main():
 
     while True:
         main_menu()
-        choice = input("Select an option (1-3): ").strip()
+        choice = input("Select an option (1-3): ").strip().lower()
         if choice == '1':
             update_reports(session)
         elif choice == '2':
             perform_queries(session)
-        elif choice == '3':
-            print("Exiting the program. Goodbye!")
-            break
+        elif choice in ['3', 'e', 'exit']:
+            confirm_exit()
+            # If exit is confirmed, sys.exit is called within confirm_exit
         else:
             print("Invalid choice. Please select a valid option.")
 
-    # Close the session
+    # Close the session (unreachable code if sys.exit is called)
     session.close()
 
 if __name__ == "__main__":

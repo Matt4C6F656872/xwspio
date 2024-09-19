@@ -28,6 +28,9 @@ class Planet(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     coordinates = Column(String, unique=True)
+    x_coord = Column(Integer)  # New column for X coordinate
+    y_coord = Column(Integer)  # New column for Y coordinate
+    z_coord = Column(Integer)  # New column for Z coordinate
     temperature = Column(String)
     planet_type = Column(String)
     attack = Column(Integer)
@@ -43,11 +46,10 @@ class Resource(Base):
     __tablename__ = 'resources'
     id = Column(Integer, primary_key=True)
     type = Column(String)
-    total = Column(Float)
-    raidable = Column(Float)
+    raidable = Column(Float, default=0.0)
+    total = Column(Float, default=0.0)  # Added 'total' to track total resources
     planet_id = Column(Integer, ForeignKey('planets.id'))
-
-    planet = relationship('Planet', back_populates='resources')
+    planet = relationship("Planet", back_populates="resources")
 
 class Building(Base):
     __tablename__ = 'buildings'
@@ -66,6 +68,11 @@ class Research(Base):
     player_id = Column(Integer, ForeignKey('players.id'))
 
     player = relationship('Player', back_populates='researches')
+
+class Setting(Base):
+    __tablename__ = 'settings'
+    key = Column(String, primary_key=True)
+    value = Column(String)
 
 def init_db(db_name='espionage_reports.db'):
     engine = create_engine(f'sqlite:///{db_name}', echo=False)

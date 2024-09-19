@@ -1,0 +1,10 @@
+# recreate_db.py
+from database import init_db
+
+def recreate_database():
+    init_db()
+
+if __name__ == "__main__":
+    recreate_database()
+    print("Database recreated successfully.")
+

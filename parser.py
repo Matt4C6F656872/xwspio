@@ -23,18 +23,35 @@ def parse_espionage_report(content):
     if planet_info:
         planet_text = planet_info.get_text(strip=True).replace("Planet information ", "")
         # Use regex to extract name and coordinates
-        match = re.match(r'"(.*?)\s*-\s*(\d+x\d+x\d+)"', planet_text)
+        match = re.match(r'"(.*?)\s*-\s*(\d+)x(\d+)x(\d+)"', planet_text)
         if match:
-            name, coordinates = match.groups()
+            name, x, y, z = match.groups()
             report_data["planet_info"]["name"] = name.strip() if name else "Unnamed"
-            report_data["planet_info"]["coordinates"] = coordinates
+            report_data["planet_info"]["coordinates"] = f"{x}x{y}x{z}"
+            report_data["planet_info"]["x_coord"] = int(x)
+            report_data["planet_info"]["y_coord"] = int(y)
+            report_data["planet_info"]["z_coord"] = int(z)
         else:
             # If the regex doesn't match, store the whole text as coordinates
             report_data["planet_info"]["name"] = "Unnamed"
-            report_data["planet_info"]["coordinates"] = planet_text.strip('"')
+            coord_match = re.match(r'(\d+)x(\d+)x(\d+)', planet_text.strip('"'))
+            if coord_match:
+                x, y, z = coord_match.groups()
+                report_data["planet_info"]["coordinates"] = f"{x}x{y}x{z}"
+                report_data["planet_info"]["x_coord"] = int(x)
+                report_data["planet_info"]["y_coord"] = int(y)
+                report_data["planet_info"]["z_coord"] = int(z)
+            else:
+                report_data["planet_info"]["coordinates"] = "Unknown"
+                report_data["planet_info"]["x_coord"] = 0
+                report_data["planet_info"]["y_coord"] = 0
+                report_data["planet_info"]["z_coord"] = 0
     else:
         report_data["planet_info"]["name"] = "Unknown"
         report_data["planet_info"]["coordinates"] = "Unknown"
+        report_data["planet_info"]["x_coord"] = 0
+        report_data["planet_info"]["y_coord"] = 0
+        report_data["planet_info"]["z_coord"] = 0
 
     # Extract player details and other information
     details = soup.find_all('td', class_=['second', 'first'])
@@ -140,6 +157,9 @@ def process_reports(urls, session):
                 planet = Planet(
                     name=report["planet_info"].get("name", "Unknown"),
                     coordinates=coordinates,
+                    x_coord=report["planet_info"].get("x_coord", 0),
+                    y_coord=report["planet_info"].get("y_coord", 0),
+                    z_coord=report["planet_info"].get("z_coord", 0),
                     temperature=report["planet_info"].get("temperature", "Unknown"),
                     planet_type=report["planet_info"].get("planet type", "Unknown"),
                     attack=report["planet_info"].get("attack", 0),  # Already an integer
@@ -152,6 +172,10 @@ def process_reports(urls, session):
             else:
                 # Update existing planet
                 planet.name = report["planet_info"].get("name", "Unknown")
+                planet.coordinates = coordinates
+                planet.x_coord = report["planet_info"].get("x_coord", 0)
+                planet.y_coord = report["planet_info"].get("y_coord", 0)
+                planet.z_coord = report["planet_info"].get("z_coord", 0)
                 planet.temperature = report["planet_info"].get("temperature", "Unknown")
                 planet.planet_type = report["planet_info"].get("planet type", "Unknown")
                 planet.attack = report["planet_info"].get("attack", 0)
